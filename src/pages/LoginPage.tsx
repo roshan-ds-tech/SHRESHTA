@@ -14,28 +14,28 @@ export function LoginPage() {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
   e.preventDefault();
 
   try {
-    const response = await axios.post("http://127.0.0.1:8000/accounts/login/", {
-      username: username, // if your backend uses "username", otherwise use email
-      password: password,
+    const response = await axios.post("http://localhost:8000/accounts/login/", {
+      username,
+      password,
     });
 
-    console.log("Login successful:", response.data);
-    toast.success("Login successful! 🎉");
+    console.log("API Response:", response.data);
 
-    // You can store user data or token in localStorage here
     localStorage.setItem("user", JSON.stringify(response.data));
 
-          // ✅ Redirect to dashboard
-    setTimeout(() => navigate("/dashboard"), 1000); // <-- Redirect after success
+    console.log("localStorage after saving:", localStorage.getItem("user"));
+
+    navigate("/");
+    window.location.reload();
   } catch (error: any) {
-    console.error("Login failed:", error.response?.data || error.message);
-    toast.error(error.response?.data?.error || "Invalid credentials 😞"); // ✅ Toaster error
+    console.log("Login Error:", error);
   }
 };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#FFF8E7] via-[#F5E6D3] to-[#FFF8E7] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">

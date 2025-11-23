@@ -1,35 +1,80 @@
-import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { ShoppingCart, User, Menu, X } from 'lucide-react';
-import { Button } from './ui/button';
-import { motion, AnimatePresence } from 'motion/react';
-import { useCart } from '../contexts/CartContext';
-import React from 'react';
+import { useState, useEffect, useRef } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { ShoppingCart, User, Menu, X } from "lucide-react";
+import { Button } from "./ui/button";
+import { motion, AnimatePresence } from "framer-motion";
+import { useCart } from "../contexts/CartContext";
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
   const location = useLocation();
+  const navigate = useNavigate();
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+
   const { cartCount } = useCart();
-  
+
+  // =========================
+  //     GET LOGGED-IN USER
+  // =========================
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) setUser(JSON.parse(storedUser));
+  }, []);
+
+  // Close dropdown if clicked outside
+  useEffect(() => {
+    function handleClickOutside(event: any) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const navLinks = [
-    { name: 'Home', path: '/' },
-    { name: 'About Us', path: '/about' },
-    { name: 'Products', path: '/products' },
-    { name: 'Contact', path: '/contact' },
+    { name: "Home", path: "/" },
+    { name: "About Us", path: "/about" },
+    { name: "Products", path: "/products" },
+    { name: "Contact", path: "/contact" },
   ];
 
   const isActive = (path: string) => location.pathname === path;
 
+  // Avatar generation (initials)
+  const getAvatar = () => {
+    if (!user) return null;
+
+    // If you ever add profile picture:
+    // if (user.profile_image) return <img src={user.profile_image} className="rounded-full w-9 h-9" />
+
+    const initial = user.username ? user.username.charAt(0).toUpperCase() : "?";
+    return (
+      <div className="w-10 h-10 bg-[#D4AF37] text-[#2C1810] rounded-full flex items-center justify-center text-lg font-bold">
+        {initial}
+      </div>
+    );
+  };
+
+  // Logout function
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    setUser(null);
+    navigate("/");
+  };
+
   return (
-    <nav className="sticky top-0 z-50 bg-[#2C1810]/95 backdrop-blur-md border-b border-[#C5A572]/20" >
+    <nav className="sticky top-0 z-50 bg-[#2C1810]/95 backdrop-blur-md border-b border-[#C5A572]/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
+          
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <div className="flex items-center">
-              <img src="/logo_final.png" alt="logo" className='h-24' style={{height: '110px'}}/>
-
-            </div>
+            <img src="/logo_final.png" alt="logo" className="h-24" style={{ height: "110px" }} />
           </Link>
 
           {/* Desktop Navigation */}
@@ -40,8 +85,8 @@ export function Navbar() {
                 to={link.path}
                 className={`relative transition-colors ${
                   isActive(link.path)
-                    ? 'text-[#D4AF37]'
-                    : 'text-[#F5E6D3] hover:text-[#D4AF37]'
+                    ? "text-[#D4AF37]"
+                    : "text-[#F5E6D3] hover:text-[#D4AF37]"
                 }`}
               >
                 {link.name}
@@ -55,34 +100,85 @@ export function Navbar() {
             ))}
           </div>
 
-          {/* Right Side Actions */}
+          {/* Right Side */}
           <div className="hidden md:flex items-center space-x-4">
+            
+            {/* Cart */}
             <Link to="/cart" className="relative text-[#F5E6D3] hover:text-[#D4AF37] transition-colors">
               <ShoppingCart className="w-5 h-5" />
               <span className="absolute -top-2 -right-2 bg-[#D4AF37] text-[#2C1810] rounded-full w-5 h-5 flex items-center justify-center text-xs">
                 {String(cartCount)}
               </span>
             </Link>
-            <Link to="/login">
-              <Button
-                variant="ghost"
-                className="text-[#F5E6D3] hover:text-[#D4AF37] hover:bg-[#D4AF37]/10"
-                style={{cursor: "pointer", color: "#F5E6D3"}}
-              >
-                <User className="w-4 h-4 mr-2" />
-                Login
-              </Button>
-            </Link>
-            <Link to="/signup">
-              <Button className="bg-[#D4AF37] text-[#2C1810] hover:bg-[#C5A572]" style={{cursor: "pointer"}}>
-                Sign Up
-              </Button>
-            </Link>
+
+            {/* Profile Dropdown */}
+            {user ? (
+  <div className="relative" ref={dropdownRef}>
+    <div
+      className="cursor-pointer"
+      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+    >
+      {getAvatar()}
+    </div>
+
+    <AnimatePresence>
+      {isDropdownOpen && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          className="absolute right-0 mt-3 w-48 bg-[#3E2723] border border-[#C5A572]/30 rounded-lg shadow-lg overflow-hidden"
+        >
+          <Link
+            to="/profile"
+            className="block px-4 py-3 text-[#F5E6D3] hover:bg-[#D4AF37]/20"
+            onClick={() => setIsDropdownOpen(false)}
+          >
+            Account Settings
+          </Link>
+
+          <Link
+            to="/orders"
+            className="block px-4 py-3 text-[#F5E6D3] hover:bg-[#D4AF37]/20"
+            onClick={() => setIsDropdownOpen(false)}
+          >
+            My Orders
+          </Link>
+
+          <button
+            onClick={handleLogout}
+            className="w-full text-left px-4 py-3 text-[#F5E6D3] hover:bg-[#D4AF37]/20"
+          >
+            Logout
+          </button>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  </div>
+) : (
+  <>
+    <Link to="/login">
+      <Button
+        variant="ghost"
+        className="text-[#F5E6D3] hover:text-[#D4AF37] hover:bg-[#D4AF37]/10"
+      >
+        Login
+      </Button>
+    </Link>
+
+    <Link to="/signup">
+      <Button className="bg-[#D4AF37] text-[#2C1810] hover:bg-[#C5A572]">
+        Sign Up
+      </Button>
+    </Link>
+  </>
+)}
+
           </div>
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden text-[#F5E6D3] hover:text-[#D4AF37]"
+            className="md:hidden text-[#F5E6D3]"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -95,43 +191,77 @@ export function Navbar() {
         {isMenuOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
+            animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             className="md:hidden bg-[#3E2723] border-t border-[#C5A572]/20"
           >
             <div className="px-4 py-4 space-y-3">
+              
               {navLinks.map((link) => (
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`block py-2 transition-colors ${
-                    isActive(link.path)
-                      ? 'text-[#D4AF37]'
-                      : 'text-[#F5E6D3] hover:text-[#D4AF37]'
+                  className={`block py-2 ${
+                    isActive(link.path) ? "text-[#D4AF37]" : "text-[#F5E6D3]"
                   }`}
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {link.name}
                 </Link>
               ))}
-              <div className="pt-4 space-y-2 border-t border-[#C5A572]/20">
-                <Link to="/cart" className="flex items-center justify-between py-2 text-[#F5E6D3]">
-                  <span>Cart</span>
-                  <ShoppingCart className="w-5 h-5" />
-                </Link>
-                <Link to="/login" onClick={() => setIsMenuOpen(false)}>
-                  <Button variant="outline" className="w-full border-[#C5A572] text-[white] hover:bg-[#D4AF37]/10"
-                  style={{cursor: "pointer", color: "white"}}
-                  >
-                    Login
-                  </Button>
-                </Link>
-                <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
-                  <Button className="w-full bg-[#D4AF37] text-[#2C1810] hover:bg-[#C5A572]">
-                    Sign Up
-                  </Button>
-                </Link>
-              </div>
+
+              {/* Cart */}
+              <Link to="/cart" className="flex items-center justify-between py-2 text-[#F5E6D3]">
+                <span>Cart</span>
+                <ShoppingCart className="w-5 h-5" />
+              </Link>
+
+              {/* Profile / Login */}
+              {user ? (
+  <>
+    <Link
+      to="/profile"
+      className="block py-2 text-[#F5E6D3] hover:text-[#D4AF37]"
+      onClick={() => setIsMenuOpen(false)}
+    >
+      Account Settings
+    </Link>
+
+    <Link
+      to="/orders"
+      className="block py-2 text-[#F5E6D3] hover:text-[#D4AF37]"
+      onClick={() => setIsMenuOpen(false)}
+    >
+      My Orders
+    </Link>
+
+    <button
+      onClick={handleLogout}
+      className="block w-full text-left py-2 text-[#F5E6D3]"
+    >
+      Logout
+    </button>
+  </>
+) : (
+  <>
+    <Link
+      to="/login"
+      className="block py-2 text-[#F5E6D3]"
+      onClick={() => setIsMenuOpen(false)}
+    >
+      Login
+    </Link>
+
+    <Link
+      to="/signup"
+      className="block py-2 text-[#F5E6D3]"
+      onClick={() => setIsMenuOpen(false)}
+    >
+      Sign Up
+      </Link>
+  </>
+)}
+
             </div>
           </motion.div>
         )}

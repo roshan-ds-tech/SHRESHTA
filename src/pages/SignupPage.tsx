@@ -84,7 +84,7 @@ const handleSubmit = async (e: React.FormEvent) => {
               <Input
                 id="name"
                 type="text"
-                placeholder="John Doe"
+                placeholder="Roshan DS"
                 value={formData.name}
                 onChange={handleChange}
                 className="mt-1 border-[#C5A572] focus:border-[#D4AF37] focus:ring-[#D4AF37]"
