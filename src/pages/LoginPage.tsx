@@ -33,10 +33,23 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     // Dispatch event to update navbar
     window.dispatchEvent(new Event('userUpdated'));
 
+    toast.success('Login successful! Redirecting...');
+    
     navigate("/");
     window.location.reload();
   } catch (error: any) {
     console.log("Login Error:", error);
+    
+    // Display error message to user
+    if (error.response && error.response.status === 401) {
+      toast.error(error.response.data?.error || 'Invalid username or password. Please try again.');
+    } else if (error.response && error.response.data?.error) {
+      toast.error(error.response.data.error);
+    } else if (error.request) {
+      toast.error('Unable to connect to server. Please check your connection.');
+    } else {
+      toast.error('An error occurred during login. Please try again.');
+    }
   }
 };
 

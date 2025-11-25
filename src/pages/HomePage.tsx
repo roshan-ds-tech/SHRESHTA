@@ -239,36 +239,38 @@ export function HomePage() {
             }}
             className="w-full"
           >
-            <CarouselContent className="-ml-4">
+            <CarouselContent className="-ml-2 md:-ml-4">
             {premiumproducts.map((premiumproduct, index) => (
-            <CarouselItem key={index} className="pl-4 md:basis-1/2 lg:basis-1/3">
+            <CarouselItem key={premiumproduct.id} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
               <motion.div
-                // ... motion props ...
-                className="bg-[#FFF8E7] rounded-lg overflow-hidden shadow-lg border-2 border-[#C5A572]/20 hover:border-[#D4AF37]/50 flex flex-col" // Added flex flex-col here too for consistency
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                className="bg-[#FFF8E7] rounded-lg overflow-hidden shadow-lg border-2 border-[#C5A572]/20 hover:border-[#D4AF37]/50 flex flex-col h-full"
               >
                 <Link to={`/product/${premiumproduct.id}`} className="block">
-                  <div className="cursor-pointer">
+                  <div className="cursor-pointer w-full">
                     <HoverVideoPlayer
                       videoSrc={premiumproduct.url}
                       posterSrc={premiumproduct.image}
-                      // Apply container styles AND explicit height here
-                      className="h-52 md:h-64" // <-- HEIGHT MOVED HERE
-                      // videoClassName="h-52 md:h-64" // <-- REMOVED FROM HERE
+                      className="h-52 md:h-64 w-full"
+                      videoClassName="w-full h-full"
                     />
                   </div>
                 </Link>
                 {/* Product details */}
-                <div className="p-6 flex flex-col flex-grow"> {/* Added flex flex-col flex-grow */}
+                <div className="p-6 flex flex-col flex-grow">
                   <Link to={`/product/${premiumproduct.id}`}>
-                    <h3 className="text-[#2C1810] mb-2 hover:text-[#D4AF37] transition-colors cursor-pointer">{premiumproduct.name}</h3>
+                    <h3 className="text-xl font-semibold text-[#2C1810] mb-2 hover:text-[#D4AF37] transition-colors cursor-pointer">{premiumproduct.name}</h3>
                   </Link>
-                  <p className="text-sm text-[#5C4033] mb-4 line-clamp-2 flex-grow">{premiumproduct.description}</p> {/* Added flex-grow */}
+                  <p className="text-sm text-[#5C4033] mb-4 line-clamp-2 flex-grow">{premiumproduct.description}</p>
                   {premiumproduct.price && (
-                    <div className="flex items-center justify-between mt-auto"> {/* Added mt-auto */}
-                      <span className="text-[#D4AF37] font-semibold">{premiumproduct.price}</span>
+                    <div className="flex items-center justify-between mt-auto gap-4">
+                      <span className="text-lg text-[#D4AF37] font-semibold">{premiumproduct.price}</span>
                       <Button
                         size="sm"
-                        className="bg-[#D4AF37] text-[#2C1810] hover:bg-[#C5A572]"
+                        className="bg-[#D4AF37] text-[#2C1810] hover:bg-[#C5A572] whitespace-nowrap"
                         style={{cursor: "pointer"}}
                         onClick={(e) => {
                           e.preventDefault();

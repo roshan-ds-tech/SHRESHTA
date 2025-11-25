@@ -236,22 +236,68 @@ export function AccountSettingsPage() {
   };
 
   // Save Password
-  const handleChangePassword = () => {
+  const handleChangePassword = async () => {
+    if (!user) {
+      toast.error('User not found');
+      return;
+    }
+
+    // Validation
+    if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
+      toast.error('Please fill all password fields');
+      return;
+    }
+
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
       toast.error('New passwords do not match');
       return;
     }
+
     if (passwordForm.newPassword.length < 6) {
       toast.error('Password must be at least 6 characters');
       return;
     }
-    // In a real app, you would send this to your backend
-    toast.success('Password changed successfully!');
-    setPasswordForm({
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: '',
-    });
+
+    if (passwordForm.currentPassword === passwordForm.newPassword) {
+      toast.error('New password must be different from current password');
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        'http://localhost:8000/accounts/change-password/',
+        {
+          username: user.username,
+          current_password: passwordForm.currentPassword,
+          new_password: passwordForm.newPassword,
+        }
+      );
+
+      if (response.data.message) {
+        toast.success(response.data.message);
+        
+        // Clear password form
+        setPasswordForm({
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: '',
+        });
+
+        // Clear user session and redirect to login
+        localStorage.removeItem('user');
+        window.dispatchEvent(new Event('userUpdated'));
+        
+        // Show message and redirect after a short delay
+        setTimeout(() => {
+          toast.success('Please login with your new password');
+          navigate('/login');
+        }, 1000);
+      }
+    } catch (error: any) {
+      console.error('Password change error:', error);
+      const errorMessage = error.response?.data?.error || 'Failed to change password. Please try again.';
+      toast.error(errorMessage);
+    }
   };
 
   // Address Management

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, styleEffect } from 'motion/react';
 import { ProductCard } from '../components/ProductCard';
 import { Filter } from 'lucide-react';
@@ -22,7 +22,7 @@ const allProducts = [
   },
   {
     id: 2,
-    image: 'jaggery-cubes.jpg',
+    image: '/jaggery-cubes.jpg',
     name: 'Cube Jaggery - Regular',
     description: 'Traditional cube jaggery perfect for everyday cooking and beverages.',
     price: '₹249/kg',
@@ -46,7 +46,7 @@ const allProducts = [
   },
   {
     id: 5,
-    image: 'jaggery-powder.jpg',
+    image: '/jaggery-powder.jpg',
     name: 'Powder Jaggery - Fine',
     description: 'Finely powdered jaggery for easy mixing in beverages and baking.',
     price: '₹279/kg',
@@ -62,7 +62,7 @@ const allProducts = [
   },
   {
     id: 7,
-    image: 'jaggery-block.jpg',
+    image: '/jaggery-block.jpg',
     name: 'Block Jaggery - Large',
     description: 'Traditional large blocks ideal for festivals and special occasions.',
     price: '₹329/kg',
@@ -70,7 +70,7 @@ const allProducts = [
   },
   {
     id: 8,
-    image: 'jaggery-block1.jpg',
+    image: '/jaggery-block1.jpg',
     name: 'Block Jaggery - Mini',
     description: 'Convenient mini blocks perfect for portion control and gifting.',
     price: '₹289/kg',
@@ -78,7 +78,7 @@ const allProducts = [
   },
   {
     id: 9,
-    image: 'jaggery-powder2.jpg',
+    image: '/jaggery-powder2.jpg',
     name: 'Powder Jaggery',
     description: 'Premium powder jaggery with certified purity.',
     price: '₹319/kg',
@@ -86,7 +86,7 @@ const allProducts = [
   },
   {
     id: 10,
-    image: 'ghee.avif',
+    image: '/ghee.avif',
     name: 'Cow Ghee',
     description: 'Premium Cow Ghee with certified purity.',
     price: '₹5099/L',
@@ -94,7 +94,7 @@ const allProducts = [
   },
   {
     id: 11,
-    image: 'butter.webp',
+    image: '/butter.webp',
     name: 'Pure Butter',
     description: 'Premium Pure Butter with certified purity.',
     price: '₹669/Kg',
@@ -102,7 +102,7 @@ const allProducts = [
   },
    {
     id: 12,
-    image: 'coffee.jpg',
+    image: '/coffee.jpg',
     name: 'Single Origin Coffee',
     description: 'Pure Single origin Coffee with rich aroma and flavor.',
     price: '₹7000/Kg',
@@ -110,53 +110,174 @@ const allProducts = [
   },
     {
     id: 13,
-    image: 'tea.jpg',
+    image: '/tea.jpg',
     name: 'Assam Black Tea',
     description: 'Pure Assam Black Tea with strong flavor and aroma.',
-    price: '3499/Kg',
+    price: '₹3499/Kg',
     category: 'beverages',
   },
       {
     id: 14,
-    image: 'green_tea.jpg',
+    image: '/green_tea.jpg',
     name: 'Green Tea',
     description: 'Pure Green Tea with refreshing taste and health benefits.',
-    price: '799/180g',
+    price: '₹799/180g',
     category: 'beverages',
   },
         {
     id: 15,
-    image: 'sorghum-millet.jpg',
+    image: '/sorghum-millet.jpg',
     name: 'Sorghum Millet',
     description: 'Healthy Sorghum Millet for nutritious meals.',
-    price: '899/kg',
+    price: '₹899/kg',
     category: 'millets',
   },
           {
     id: 16,
-    image: 'FinerMillet.webp',
+    image: '/FinerMillet.webp',
     name: 'Finer Millet',
     description: 'Nutritious Finer Millet for wholesome diets.',
-    price: '450/kg',
+    price: '₹450/kg',
     category: 'millets',
   },
             {
     id: 17,
-    image: 'pearl-millet.jpg',
+    image: '/pearl-millet.jpg',
     name: 'Pearl Millet',
     description: 'Wholesome Pearl Millet for healthy living.',
-    price: '650/kg',
+    price: '₹650/kg',
     category: 'millets',
   },
 ];
 
+// Interface for admin products
+interface AdminProduct {
+  id: number;
+  name: string;
+  description: string;
+  price: string;
+  image: string;
+  category: string;
+  createdAt: string;
+}
+
+// Get admin products from localStorage
+const getAdminProducts = (): AdminProduct[] => {
+  const stored = localStorage.getItem('adminProducts');
+  if (stored) {
+    try {
+      return JSON.parse(stored);
+    } catch {
+      return [];
+    }
+  }
+  return [];
+};
+
+// Get deleted product IDs from localStorage
+const getDeletedProductIds = (): Set<number> => {
+  const stored = localStorage.getItem('deletedProductIds');
+  if (stored) {
+    try {
+      const ids = JSON.parse(stored);
+      return new Set(ids);
+    } catch {
+      return new Set();
+    }
+  }
+  return new Set();
+};
+
+// Get edited products from localStorage
+const getEditedProducts = (): Map<number, any> => {
+  const stored = localStorage.getItem('editedProducts');
+  if (stored) {
+    try {
+      const edited = JSON.parse(stored);
+      const map = new Map<number, any>();
+      edited.forEach((p: any) => {
+        map.set(p.id, p);
+      });
+      return map;
+    } catch {
+      return new Map();
+    }
+  }
+  return new Map();
+};
+
+// Convert admin product to product format
+const convertAdminProduct = (adminProduct: AdminProduct) => {
+  return {
+    id: adminProduct.id,
+    image: adminProduct.image,
+    name: adminProduct.name,
+    description: adminProduct.description,
+    price: adminProduct.price,
+    category: adminProduct.category,
+  };
+};
+
 export function ProductsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('featured');
+  const [products, setProducts] = useState(allProducts);
+
+  // Load and merge all products (existing + admin, with deletions and edits applied)
+  const loadAllProducts = () => {
+    const deletedIds = getDeletedProductIds();
+    const editedProducts = getEditedProducts();
+    const adminProducts = getAdminProducts();
+    
+    // Start with existing products, apply edits, exclude deleted
+    const processedExisting = allProducts
+      .filter(p => !deletedIds.has(p.id))
+      .map(p => {
+        const edited = editedProducts.get(p.id);
+        return edited ? {
+          id: edited.id,
+          image: edited.image,
+          name: edited.name,
+          description: edited.description,
+          price: edited.price,
+          category: edited.category,
+        } : p;
+      });
+    
+    // Add admin products, exclude deleted
+    const convertedAdminProducts = adminProducts
+      .filter(p => !deletedIds.has(p.id))
+      .map(convertAdminProduct);
+    
+    // Merge all products
+    const mergedProducts = [...processedExisting, ...convertedAdminProducts];
+    setProducts(mergedProducts);
+  };
+
+  // Load products on mount
+  useEffect(() => {
+    loadAllProducts();
+  }, []);
+
+  // Listen for storage changes (when admin adds/edits/deletes products)
+  useEffect(() => {
+    const handleStorageChange = () => {
+      loadAllProducts();
+    };
+
+    // Listen for custom event when admin modifies products
+    window.addEventListener('adminProductAdded', handleStorageChange);
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('adminProductAdded', handleStorageChange);
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   const filteredProducts = selectedCategory === 'all' 
-    ? allProducts 
-    : allProducts.filter(p => p.category === selectedCategory);
+    ? products 
+    : products.filter(p => p.category === selectedCategory);
 
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     if (sortBy === 'price-low') {

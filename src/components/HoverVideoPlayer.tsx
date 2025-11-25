@@ -61,7 +61,7 @@ export function HoverVideoPlayer({
       preload="metadata" // <-- Add this preload hint
       className={cn(
         "w-full h-full object-cover block", // Stays the same - fills container
-        videoClassName="h-52"
+        videoClassName
       )}
     >
       Your browser does not support the video tag.

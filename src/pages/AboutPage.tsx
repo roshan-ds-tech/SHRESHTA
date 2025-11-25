@@ -1,3 +1,4 @@
+import React from 'react';
 import { motion } from 'motion/react';
 import { Heart, Users, Award, Sprout } from 'lucide-react';
 
@@ -174,7 +175,7 @@ export function AboutPage() {
               className='mx-auto max-w-lg'
             >
               <img
-                src="https://images.unsplash.com/photo-1695089028153-7ee6393a9981?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0cmFkaXRpb25hbCUyMGNvb2tpbmclMjBwcm9jZXNzfGVufDF8fHx8MTc2MTMxMDc2MXww&ixlib=rb-4.1.0&q=80&w=1080"
+                src="/about_us.jpg"
                 alt="Traditional jaggery making process"
                 className="rounded-2xl shadow-xl border-4 border-[#C5A572]/30 "
                 style={{width: 350, height: 450}}

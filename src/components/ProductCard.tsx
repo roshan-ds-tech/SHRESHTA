@@ -39,11 +39,24 @@ export function ProductCard({ id, image, name, description, price }: ProductCard
       className="bg-[#FFF8E7] rounded-lg overflow-hidden shadow-lg border-2 border-[#C5A572]/20 hover:border-[#D4AF37]/50 transition-all"
     >
       <Link to={`/product/${id}`} className="block">
-        <div className="aspect-square overflow-hidden cursor-pointer">
+        <div className="aspect-square overflow-hidden cursor-pointer bg-gray-100">
           <img
             src={image}
             alt={name}
             className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              // Try to fix common path issues
+              if (!image.startsWith('http') && !image.startsWith('/')) {
+                target.src = '/' + image;
+              } else if (image.startsWith('http')) {
+                // For external URLs, show placeholder if they fail
+                target.src = 'https://via.placeholder.com/400x400?text=Image+Not+Available';
+              } else {
+                // Fallback placeholder
+                target.src = 'https://via.placeholder.com/400x400?text=Image+Not+Available';
+              }
+            }}
           />
         </div>
       </Link>
