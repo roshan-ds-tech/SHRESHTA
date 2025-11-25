@@ -1,9 +1,11 @@
+import React from "react";
 import { motion } from 'motion/react';
 import { Button } from '../components/ui/button';
 import { ProductCard } from '../components/ProductCard';
 import { HoverVideoPlayer } from '../components/HoverVideoPlayer';
 import { Link } from 'react-router-dom';
 import { Leaf, Award, Heart, Truck, Star, ShoppingCart } from 'lucide-react';
+import { useCart } from '../contexts/CartContext';
 import {
   Carousel,
   CarouselContent,
@@ -38,6 +40,7 @@ const products = [
 
 const premiumproducts = [
   {
+    id: 4,
     url: '/jaggery-cubes1 (online-video-cutter.com).mp4',
     image: '/jaggery-cube1_video.jpeg',
     name: 'Cube Jaggery',
@@ -45,6 +48,7 @@ const premiumproducts = [
     price: '₹299/kg',
   },
   {
+    id: 5,
     url: '/hover_video2 (online-video-cutter.com).mp4',
     image: '/hoveer_image2.jpeg',
     name: 'Liquid Jaggery',
@@ -52,6 +56,7 @@ const premiumproducts = [
     price: '₹349/kg',
   },
   {
+    id: 6,
     url: '/hover_video3 (online-video-cutter.com).mp4',
     image: '/hover_video3.jpeg',
     name: 'Powder Jaggery',
@@ -102,6 +107,25 @@ const testimonials = [
 ];
 
 export function HomePage() {
+  const { addToCart } = useCart();
+
+  const handleAddToCart = (premiumproduct: typeof premiumproducts[0]) => {
+    // Parse price string (e.g., '₹299/kg' -> 299)
+    const cleanedPrice = premiumproduct.price.replace(/[^0-9.]/g, '');
+    const numericPrice = parseFloat(cleanedPrice);
+
+    if (!isNaN(numericPrice)) {
+      addToCart({
+        id: premiumproduct.id,
+        image: premiumproduct.image,
+        name: premiumproduct.name,
+        price: numericPrice,
+      });
+    } else {
+      console.error("Could not parse price for item:", premiumproduct.name, "Input price:", premiumproduct.price);
+    }
+  };
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -222,24 +246,34 @@ export function HomePage() {
                 // ... motion props ...
                 className="bg-[#FFF8E7] rounded-lg overflow-hidden shadow-lg border-2 border-[#C5A572]/20 hover:border-[#D4AF37]/50 flex flex-col" // Added flex flex-col here too for consistency
               >
-                <HoverVideoPlayer
-                  videoSrc={premiumproduct.url}
-                  posterSrc={premiumproduct.image}
-                  // Apply container styles AND explicit height here
-                  className="h-52 md:h-64" // <-- HEIGHT MOVED HERE
-                  // videoClassName="h-52 md:h-64" // <-- REMOVED FROM HERE
-                />
+                <Link to={`/product/${premiumproduct.id}`} className="block">
+                  <div className="cursor-pointer">
+                    <HoverVideoPlayer
+                      videoSrc={premiumproduct.url}
+                      posterSrc={premiumproduct.image}
+                      // Apply container styles AND explicit height here
+                      className="h-52 md:h-64" // <-- HEIGHT MOVED HERE
+                      // videoClassName="h-52 md:h-64" // <-- REMOVED FROM HERE
+                    />
+                  </div>
+                </Link>
                 {/* Product details */}
                 <div className="p-6 flex flex-col flex-grow"> {/* Added flex flex-col flex-grow */}
-                  <h3 className="text-[#2C1810] mb-2">{premiumproduct.name}</h3>
+                  <Link to={`/product/${premiumproduct.id}`}>
+                    <h3 className="text-[#2C1810] mb-2 hover:text-[#D4AF37] transition-colors cursor-pointer">{premiumproduct.name}</h3>
+                  </Link>
                   <p className="text-sm text-[#5C4033] mb-4 line-clamp-2 flex-grow">{premiumproduct.description}</p> {/* Added flex-grow */}
                   {premiumproduct.price && (
                     <div className="flex items-center justify-between mt-auto"> {/* Added mt-auto */}
-                      <span className="text-[#D4AF37]">{premiumproduct.price}</span>
+                      <span className="text-[#D4AF37] font-semibold">{premiumproduct.price}</span>
                       <Button
                         size="sm"
                         className="bg-[#D4AF37] text-[#2C1810] hover:bg-[#C5A572]"
                         style={{cursor: "pointer"}}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleAddToCart(premiumproduct);
+                        }}
                       >
                         <ShoppingCart className="w-4 h-4 mr-2" />
                         Add to Cart

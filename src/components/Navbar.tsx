@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ShoppingCart, User, Menu, X } from "lucide-react";
 import { Button } from "./ui/button";
@@ -161,13 +161,14 @@ export function Navbar() {
       <Button
         variant="ghost"
         className="text-[#F5E6D3] hover:text-[#D4AF37] hover:bg-[#D4AF37]/10"
+        style={{color: "#F5E6D3", cursor: "pointer"}}
       >
         Login
       </Button>
     </Link>
 
     <Link to="/signup">
-      <Button className="bg-[#D4AF37] text-[#2C1810] hover:bg-[#C5A572]">
+      <Button className="bg-[#D4AF37] text-[#2C1810] hover:bg-[#C5A572]" style={{cursor: "pointer"}}>
         Sign Up
       </Button>
     </Link>

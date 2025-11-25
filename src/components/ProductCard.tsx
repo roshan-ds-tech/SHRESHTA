@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
 import { Pointer, ShoppingCart } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
+import { Link } from 'react-router-dom';
 import { Button } from "./ui/button";
 
 interface ProductCardProps {
@@ -37,24 +38,31 @@ export function ProductCard({ id, image, name, description, price }: ProductCard
       whileHover={{ y: -8 }}
       className="bg-[#FFF8E7] rounded-lg overflow-hidden shadow-lg border-2 border-[#C5A572]/20 hover:border-[#D4AF37]/50 transition-all"
     >
-      <div className="aspect-square overflow-hidden">
-        <img
-          src={image}
-          alt={name}
-          className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
-        />
-      </div>
+      <Link to={`/product/${id}`} className="block">
+        <div className="aspect-square overflow-hidden cursor-pointer">
+          <img
+            src={image}
+            alt={name}
+            className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
+          />
+        </div>
+      </Link>
       <div className="p-6">
-        <h3 className="text-[#2C1810] mb-2">{name}</h3>
+        <Link to={`/product/${id}`}>
+          <h3 className="text-[#2C1810] mb-2 hover:text-[#D4AF37] transition-colors cursor-pointer">{name}</h3>
+        </Link>
         <p className="text-sm text-[#5C4033] mb-4">{description}</p>
         {price && (
           <div className="flex items-center justify-between">
-            <span className="text-[#D4AF37]">{price}</span>
+            <span className="text-[#D4AF37] font-semibold">{price}</span>
             <Button
               size="sm"
               className="bg-[#D4AF37] text-[#2C1810] hover:bg-[#C5A572]"
               style={{cursor: "pointer"}}
-              onClick={handleAddToCart}
+              onClick={(e) => {
+                e.preventDefault();
+                handleAddToCart();
+              }}
             >
               <ShoppingCart className="w-4 h-4 mr-2" />
               Add to Cart
