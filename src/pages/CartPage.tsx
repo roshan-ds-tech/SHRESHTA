@@ -1,11 +1,25 @@
-import { useContext } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
 import { CartContext } from '../contexts/CartContext';
 
 export function CartPage() {
+  const navigate = useNavigate();
+  const [user, setUser] = useState<any>(null);
+
+  // Check if user is logged in
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    } else {
+      // Redirect to login if not logged in
+      navigate("/login");
+    }
+  }, [navigate]);
+
   const cartContext = useContext(CartContext);
 
   if (!cartContext) {
@@ -13,6 +27,11 @@ export function CartPage() {
   }
 
   const { cartItems, removeFromCart, updateQuantity } = cartContext;
+
+  // Don't render cart if user is not logged in (will redirect)
+  if (!user) {
+    return null;
+  }
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const shipping = subtotal > 500 ? 0 : 50;

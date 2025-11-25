@@ -11,6 +11,7 @@ import { CartPage } from './pages/CartPage';
 import { ContactPage } from './pages/ContactPage';
 import { FAQPage } from './pages/FAQPage';
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
+import { AccountSettingsPage } from './pages/AccountSettingsPage';
 import axios from 'axios';
 import { use, useEffect } from 'react';
 import DashboardPage from "./pages/DashboardPage";
@@ -41,6 +42,7 @@ export default function App() {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/faq" element={<FAQPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/profile" element={<AccountSettingsPage />} />
           <Route path="/privacy" element={<PrivacyPolicyPage />} />
         </Routes>
         <Footer />

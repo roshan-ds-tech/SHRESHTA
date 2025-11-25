@@ -13,7 +13,7 @@ export function Navbar() {
   const navigate = useNavigate();
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
-  const { cartCount } = useCart();
+  const { cartCount, clearCart } = useCart();
 
   // =========================
   //     GET LOGGED-IN USER
@@ -21,8 +21,29 @@ export function Navbar() {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) setUser(JSON.parse(storedUser));
+    const checkUser = () => {
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      } else {
+        setUser(null);
+      }
+    };
+
+    // Check on mount
+    checkUser();
+
+    // Listen for storage changes (e.g., when user logs in/out in another tab)
+    window.addEventListener('storage', checkUser);
+
+    // Also listen for custom event for same-tab updates
+    const handleUserUpdate = () => checkUser();
+    window.addEventListener('userUpdated', handleUserUpdate);
+
+    return () => {
+      window.removeEventListener('storage', checkUser);
+      window.removeEventListener('userUpdated', handleUserUpdate);
+    };
   }, []);
 
   // Close dropdown if clicked outside
@@ -45,14 +66,33 @@ export function Navbar() {
 
   const isActive = (path: string) => location.pathname === path;
 
-  // Avatar generation (initials)
+  // Avatar state for fallback
+  const [avatarError, setAvatarError] = useState(false);
+
+  // Reset avatar error when user changes
+  useEffect(() => {
+    setAvatarError(false);
+  }, [user]);
+
+  // Avatar generation (initials or profile picture)
   const getAvatar = () => {
     if (!user) return null;
 
-    // If you ever add profile picture:
-    // if (user.profile_image) return <img src={user.profile_image} className="rounded-full w-9 h-9" />
-
     const initial = user.username ? user.username.charAt(0).toUpperCase() : "?";
+
+    // If profile picture exists and no error, show it
+    if (user.profile_image && !avatarError) {
+      return (
+        <img 
+          src={user.profile_image} 
+          alt={user.username || 'User'} 
+          className="w-10 h-10 rounded-full object-cover border-2 border-[#D4AF37]"
+          onError={() => setAvatarError(true)}
+        />
+      );
+    }
+
+    // No profile image or error loading image, show initials
     return (
       <div className="w-10 h-10 bg-[#D4AF37] text-[#2C1810] rounded-full flex items-center justify-center text-lg font-bold">
         {initial}
@@ -63,7 +103,10 @@ export function Navbar() {
   // Logout function
   const handleLogout = () => {
     localStorage.removeItem("user");
+    clearCart(); // Clear cart when logging out
     setUser(null);
+    // Dispatch event to update navbar in other components
+    window.dispatchEvent(new Event('userUpdated'));
     navigate("/");
   };
 
@@ -103,13 +146,15 @@ export function Navbar() {
           {/* Right Side */}
           <div className="hidden md:flex items-center space-x-4">
             
-            {/* Cart */}
-            <Link to="/cart" className="relative text-[#F5E6D3] hover:text-[#D4AF37] transition-colors">
-              <ShoppingCart className="w-5 h-5" />
-              <span className="absolute -top-2 -right-2 bg-[#D4AF37] text-[#2C1810] rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                {String(cartCount)}
-              </span>
-            </Link>
+            {/* Cart - Only show when user is logged in */}
+            {user && (
+              <Link to="/cart" className="relative text-[#F5E6D3] hover:text-[#D4AF37] transition-colors">
+                <ShoppingCart className="w-5 h-5" />
+                <span className="absolute -top-2 -right-2 bg-[#D4AF37] text-[#2C1810] rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                  {String(cartCount)}
+                </span>
+              </Link>
+            )}
 
             {/* Profile Dropdown */}
             {user ? (
@@ -127,11 +172,11 @@ export function Navbar() {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
-          className="absolute right-0 mt-3 w-48 bg-[#3E2723] border border-[#C5A572]/30 rounded-lg shadow-lg overflow-hidden"
+          className="absolute right-0 mt-3 w-48 bg-white border-2 border-[#C5A572] rounded-lg shadow-lg overflow-hidden"
         >
           <Link
             to="/profile"
-            className="block px-4 py-3 text-[#F5E6D3] hover:bg-[#D4AF37]/20"
+            className="block px-4 py-3 text-[#2C1810] hover:bg-[#F5E6D3] transition-colors"
             onClick={() => setIsDropdownOpen(false)}
           >
             Account Settings
@@ -139,7 +184,7 @@ export function Navbar() {
 
           <Link
             to="/orders"
-            className="block px-4 py-3 text-[#F5E6D3] hover:bg-[#D4AF37]/20"
+            className="block px-4 py-3 text-[#2C1810] hover:bg-[#F5E6D3] transition-colors"
             onClick={() => setIsDropdownOpen(false)}
           >
             My Orders
@@ -147,7 +192,8 @@ export function Navbar() {
 
           <button
             onClick={handleLogout}
-            className="w-full text-left px-4 py-3 text-[#F5E6D3] hover:bg-[#D4AF37]/20"
+            className="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 transition-colors"
+            style={{ color: '#dc2626' }}
           >
             Logout
           </button>
@@ -211,11 +257,13 @@ export function Navbar() {
                 </Link>
               ))}
 
-              {/* Cart */}
-              <Link to="/cart" className="flex items-center justify-between py-2 text-[#F5E6D3]">
-                <span>Cart</span>
-                <ShoppingCart className="w-5 h-5" />
-              </Link>
+              {/* Cart - Only show when user is logged in */}
+              {user && (
+                <Link to="/cart" className="flex items-center justify-between py-2 text-[#F5E6D3]">
+                  <span>Cart</span>
+                  <ShoppingCart className="w-5 h-5" />
+                </Link>
+              )}
 
               {/* Profile / Login */}
               {user ? (
@@ -238,7 +286,8 @@ export function Navbar() {
 
     <button
       onClick={handleLogout}
-      className="block w-full text-left py-2 text-[#F5E6D3]"
+      className="block w-full text-left py-2 hover:text-red-700 transition-colors"
+      style={{ color: '#dc2626' }}
     >
       Logout
     </button>

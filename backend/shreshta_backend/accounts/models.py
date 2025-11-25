@@ -15,6 +15,11 @@ class UserProfile(models.Model):
         validators=[phone_validator],
         blank=True
     )
+    profile_image = models.ImageField(
+        upload_to='profile_images/',
+        blank=True,
+        null=True
+    )
 
     def __str__(self):
         return self.user.username

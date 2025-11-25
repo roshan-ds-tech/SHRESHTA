@@ -1,3 +1,4 @@
+import React from 'react';
 import { motion } from 'motion/react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -131,7 +132,7 @@ export function ContactPage() {
                     <Input
                       id="firstName"
                       type="text"
-                      placeholder="John"
+                      placeholder="Roshan"
                       className="mt-1 border-[#C5A572] focus:border-[#D4AF37] focus:ring-[#D4AF37]"
                       required
                     />
@@ -143,7 +144,7 @@ export function ContactPage() {
                     <Input
                       id="lastName"
                       type="text"
-                      placeholder="Doe"
+                      placeholder="DS"
                       className="mt-1 border-[#C5A572] focus:border-[#D4AF37] focus:ring-[#D4AF37]"
                       required
                     />

@@ -1,6 +1,7 @@
 // src/components/EcommerceDashboard.tsx
 import React, { useState, useRef, ChangeEvent, JSX } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useCart } from '../contexts/CartContext';
 import {
   User,
   Package,
@@ -112,6 +113,7 @@ const starterWishlist: WishlistItem[] = [
 
 export default function EcommerceDashboard(): JSX.Element {
   const navigate = useNavigate();
+  const { clearCart } = useCart();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // States
@@ -223,7 +225,8 @@ export default function EcommerceDashboard(): JSX.Element {
   };
 
   const handleLogout = () => {
-    // TODO: clear auth and navigate
+    localStorage.removeItem("user");
+    clearCart(); // Clear cart when logging out
     navigate('/login');
   };
 

@@ -3,8 +3,10 @@ from rest_framework.response import Response
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 from .models import UserProfile
-from  rest_framework import status
+from rest_framework import status
 from django.contrib.auth import authenticate
+from django.conf import settings
+import os
 
 @api_view(['GET', 'POST'])
 def signup_view(request):
@@ -38,7 +40,17 @@ def signup_view(request):
     profile.phone = phone
     profile.save()
 
-    return Response({'message': 'User registered successfully!'})
+    profile_image_url = None
+    if profile.profile_image:
+        profile_image_url = request.build_absolute_uri(profile.profile_image.url)
+
+    return Response({
+        'message': 'User registered successfully!',
+        'username': user.username,
+        'email': user.email,
+        'phone': profile.phone or '',
+        'profile_image': profile_image_url,
+    })
 
 
 @api_view(['POST'])
@@ -49,8 +61,119 @@ def login_view(request):
     user = authenticate(username=username, password=password)
 
     if user is not None:
-        return Response({'message': 'Login successful',
+        profile, created = UserProfile.objects.get_or_create(user=user)
+        profile_image_url = None
+        if profile.profile_image:
+            profile_image_url = request.build_absolute_uri(profile.profile_image.url)
+        
+        return Response({
+            'message': 'Login successful',
             'username': user.username,
-            'email': user.email, 'phone': user.userprofile.phone}, status=status.HTTP_200_OK)
+            'email': user.email,
+            'phone': profile.phone or '',
+            'profile_image': profile_image_url,
+        }, status=status.HTTP_200_OK)
     else:
         return Response({'error': 'Invalid username or password'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+@api_view(['GET', 'PUT'])
+def profile_view(request):
+    """Get or update user profile"""
+    username = request.data.get('username') or request.query_params.get('username')
+    
+    if not username:
+        return Response({'error': 'Username is required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        user = User.objects.get(username=username)
+        profile, created = UserProfile.objects.get_or_create(user=user)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    if request.method == 'GET':
+        profile_image_url = None
+        if profile.profile_image:
+            profile_image_url = request.build_absolute_uri(profile.profile_image.url)
+        
+        return Response({
+            'username': user.username,
+            'email': user.email,
+            'phone': profile.phone or '',
+            'profile_image': profile_image_url,
+        })
+    
+    elif request.method == 'PUT':
+        # Update profile fields
+        if 'phone' in request.data:
+            profile.phone = request.data['phone']
+        
+        if 'email' in request.data:
+            user.email = request.data['email']
+            user.save()
+        
+        if 'username' in request.data and request.data['username'] != username:
+            if User.objects.filter(username=request.data['username']).exclude(pk=user.pk).exists():
+                return Response({'error': 'Username already taken'}, status=status.HTTP_400_BAD_REQUEST)
+            user.username = request.data['username']
+            user.save()
+        
+        profile.save()
+        
+        profile_image_url = None
+        if profile.profile_image:
+            profile_image_url = request.build_absolute_uri(profile.profile_image.url)
+        
+        return Response({
+            'message': 'Profile updated successfully',
+            'username': user.username,
+            'email': user.email,
+            'phone': profile.phone or '',
+            'profile_image': profile_image_url,
+        })
+
+
+@api_view(['POST'])
+def upload_profile_image(request):
+    """Upload or update profile picture"""
+    username = request.data.get('username')
+    
+    if not username:
+        return Response({'error': 'Username is required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        user = User.objects.get(username=username)
+        profile, created = UserProfile.objects.get_or_create(user=user)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    if 'profile_image' not in request.FILES:
+        return Response({'error': 'No image file provided'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    image_file = request.FILES['profile_image']
+    
+    # Validate file type
+    allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+    if image_file.content_type not in allowed_types:
+        return Response({'error': 'Invalid file type. Only images are allowed.'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Validate file size (5MB max)
+    if image_file.size > 5 * 1024 * 1024:
+        return Response({'error': 'File size too large. Maximum size is 5MB.'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Delete old image if exists
+    if profile.profile_image:
+        old_image_path = profile.profile_image.path
+        if os.path.exists(old_image_path):
+            os.remove(old_image_path)
+    
+    # Save new image
+    profile.profile_image = image_file
+    profile.save()
+    
+    profile_image_url = request.build_absolute_uri(profile.profile_image.url)
+    
+    return Response({
+        'message': 'Profile image uploaded successfully',
+        'profile_image': profile_image_url,
+    }, status=status.HTTP_200_OK)

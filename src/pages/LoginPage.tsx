@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState } from 'react';
 import { motion } from 'motion/react';
 import { Button } from '../components/ui/button';
@@ -29,6 +30,9 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 
     console.log("localStorage after saving:", localStorage.getItem("user"));
 
+    // Dispatch event to update navbar
+    window.dispatchEvent(new Event('userUpdated'));
+
     navigate("/");
     window.location.reload();
   } catch (error: any) {
@@ -48,7 +52,9 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
           {/* Header */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center mb-4">
-              <img src="/logo_final.png" alt="logo" className='h-64' style={{height: '160px'}}/>
+              <div className="w-40 h-40 rounded-full bg-[#3E2723] flex items-center justify-center p-4">
+                <img src="/logo_final.png" alt="logo" className="h-full w-full object-contain" style={{maxHeight: '140px', maxWidth: '140px'}}/>
+              </div>
             </div>
             <h2 className="text-2xl text-[#2C1810]">Welcome Back</h2>
             <p className="text-sm text-[#5C4033] mt-2">
@@ -68,7 +74,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                 placeholder="Joh Doe"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="mt-1 border-[#C5A572] focus:border-[#D4AF37] focus:ring-[#D4AF37]"
+                className="mt-1 border-[#C5A572] focus:border-[#D4AF37] focus:ring-[#D4AF37]" 
                 required
               />
             </div>
@@ -91,6 +97,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-[#5C4033] hover:text-[#D4AF37]"
+                  style={{cursor: "pointer"}}
                 >
                   {showPassword ? (
                     <EyeOff className="w-5 h-5" />
@@ -107,6 +114,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                   id="remember"
                   type="checkbox"
                   className="w-4 h-4 border-[#C5A572] text-[#D4AF37] focus:ring-[#D4AF37] rounded"
+                  style={{cursor: "pointer"}}
                 />
                 <label htmlFor="remember" className="ml-2 text-sm text-[#5C4033]">
                   Remember me
@@ -120,6 +128,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
             <Button
               type="submit"
               className="w-full bg-[#D4AF37] text-[#2C1810] hover:bg-[#C5A572] py-6"
+              style={{cursor: "pointer"}}
             >
               Sign In
             </Button>
@@ -143,6 +152,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
               type="button"
               variant="outline"
               className="border-[#C5A572] text-[#2C1810] hover:bg-[#D4AF37]/10"
+              style={{cursor: "pointer"}}
             >
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                 <path
@@ -168,6 +178,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
               type="button"
               variant="outline"
               className="border-[#C5A572] text-[#2C1810] hover:bg-[#D4AF37]/10"
+              style={{cursor: "pointer"}}
             >
               <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
