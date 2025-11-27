@@ -1,3 +1,4 @@
+import React from "react";
 import { motion } from 'motion/react';
 import { Pointer, ShoppingCart } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';

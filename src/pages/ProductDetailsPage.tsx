@@ -409,7 +409,7 @@ export function ProductDetailsPage() {
                           selectedWeight === weight
                             ? 'border-[#D4AF37] bg-[#D4AF37] text-[#2C1810] shadow-sm'
                             : 'border-[#F5E6D3] bg-white text-[#5C4033] hover:border-[#D4AF37] hover:bg-[#D4AF37]/5'
-                        }`} style={{padding: "10px 20px"}}
+                        }`} style={{padding: "10px 20px", cursor: "pointer"}}
                       >
                         {weight}
                       </button>
@@ -426,6 +426,7 @@ export function ProductDetailsPage() {
                     <button
                       onClick={() => setQuantity(Math.max(1, quantity - 1))}
                       className="px-4 py-2 text-[#2C1810] hover:bg-[#F5E6D3] transition-colors"
+                      style={{cursor: "pointer"}}
                     >
                       <Minus className="w-4 h-4" />
                     </button>
@@ -433,6 +434,7 @@ export function ProductDetailsPage() {
                     <button
                       onClick={() => setQuantity(quantity + 1)}
                       className="px-4 py-2 text-[#2C1810] hover:bg-[#F5E6D3] transition-colors"
+                      style={{cursor: "pointer"}}
                     >
                       <Plus className="w-4 h-4" />
                     </button>
