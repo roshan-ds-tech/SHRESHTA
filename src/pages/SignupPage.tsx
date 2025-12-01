@@ -9,6 +9,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { API_BASE_URL } from '../config';
 
 export function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -32,7 +33,7 @@ const handleSubmit = async (e: React.FormEvent) => {
   }
 
   try {
-    const response = await axios.post("http://127.0.0.1:8000/accounts/signup/", {
+    const response = await axios.post(`${API_BASE_URL}/accounts/signup/`, {
       username: formData.name,
       email: formData.email,
       phone: formData.phone,

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { API_BASE_URL } from '../config';
 import { 
   User, Camera, Save, X, Plus, Edit, Trash2, MapPin, 
   Lock, Mail, Bell, Package,
@@ -74,7 +75,7 @@ export function AccountSettingsPage() {
   const fetchUserProfile = async (username: string) => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/accounts/profile/?username=${username}`
+        `${API_BASE_URL}/accounts/profile/?username=${username}`
       );
       if (response.data.profile_image) {
         setProfileImage(response.data.profile_image);
@@ -167,7 +168,7 @@ export function AccountSettingsPage() {
       formData.append('username', user?.username || '');
 
       const response = await axios.post(
-        'http://localhost:8000/accounts/profile/upload-image/',
+        `${API_BASE_URL}/accounts/profile/upload-image/`,
         formData,
         {
           headers: {
@@ -207,7 +208,7 @@ export function AccountSettingsPage() {
 
     try {
       const response = await axios.put(
-        'http://localhost:8000/accounts/profile/',
+        `${API_BASE_URL}/accounts/profile/`,
         {
           username: user.username, // Current username
           email: personalInfo.email,
@@ -265,7 +266,7 @@ export function AccountSettingsPage() {
 
     try {
       const response = await axios.post(
-        'http://localhost:8000/accounts/change-password/',
+        `${API_BASE_URL}/accounts/change-password/`,
         {
           username: user.username,
           current_password: passwordForm.currentPassword,

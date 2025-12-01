@@ -18,13 +18,14 @@ import { AdminDashboardPage } from './pages/AdminDashboardPage';
 import axios from 'axios';
 import { use, useEffect } from 'react';
 import DashboardPage from "./pages/DashboardPage";
+import { API_BASE_URL } from './config';
 
 
 import { CartProvider } from './contexts/CartContext';
 
 export default function App() {
   useEffect(() => {
-    axios.get('http://127.0.0.1:8000/accounts/signup/')
+    axios.get(`${API_BASE_URL}/accounts/signup/`)
     .then(res => console.log(res.data))
     .catch(err => console.log(err));
   }, []);

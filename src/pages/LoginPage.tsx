@@ -7,7 +7,8 @@ import { Label } from '../components/ui/label';
 import { Eye, EyeOff } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import toast from 'react-hot-toast'; 
+import toast from 'react-hot-toast';
+import { API_BASE_URL } from '../config'; 
 
 export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -19,7 +20,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
   e.preventDefault();
 
   try {
-    const response = await axios.post("http://localhost:8000/accounts/login/", {
+    const response = await axios.post(`${API_BASE_URL}/accounts/login/`, {
       username,
       password,
     });
