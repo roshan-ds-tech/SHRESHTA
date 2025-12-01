@@ -161,7 +161,7 @@ export function HomePage() {
               transition={{ delay: 0.4 }}
               className="text-4xl md:text-6xl text-[#FFF8E7] mb-6 font-serif"
             >
-              Pure, Premium Jaggery Crafted with Tradition.
+              Pure, Premium Jaggery Crafted with Tradition
             </motion.h1>
 
             <motion.p
