@@ -1,3 +1,4 @@
+import React from 'react';
 import { motion } from 'motion/react';
 import {
   Accordion,
@@ -142,18 +143,43 @@ export function FAQPage() {
               </h2>
               <Accordion type="single" collapsible className="space-y-4">
                 {category.questions.map((faq, index) => (
-                  <AccordionItem
+                  <motion.div
                     key={index}
-                    value={`item-${categoryIndex}-${index}`}
-                    className="bg-white rounded-lg border-2 border-[#C5A572]/20 px-6"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-50px" }}
+                    transition={{ delay: index * 0.05, duration: 0.4 }}
                   >
-                    <AccordionTrigger className="text-left text-[#2C1810] hover:text-[#D4AF37] hover:no-underline">
-                      {faq.q}
-                    </AccordionTrigger>
-                    <AccordionContent className="text-[#5C4033]">
-                      {faq.a}
-                    </AccordionContent>
-                  </AccordionItem>
+                    <AccordionItem
+                      value={`item-${categoryIndex}-${index}`}
+                      className="bg-white rounded-lg border-2 border-[#C5A572]/20 px-6 transition-all duration-300 hover:border-[#D4AF37]/50 hover:shadow-md"
+                    >
+                      <motion.div
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.98 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                      >
+                        <AccordionTrigger className="text-left text-[#2C1810] hover:text-[#D4AF37] hover:no-underline cursor-pointer transition-all duration-300">
+                          <motion.span
+                            initial={{ opacity: 0.8 }}
+                            whileHover={{ opacity: 1, x: 4 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            {faq.q}
+                          </motion.span>
+                        </AccordionTrigger>
+                      </motion.div>
+                      <AccordionContent className="text-[#5C4033]">
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.4, ease: "easeOut" }}
+                        >
+                          {faq.a}
+                        </motion.div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </motion.div>
                 ))}
               </Accordion>
             </motion.div>
@@ -177,12 +203,12 @@ export function FAQPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a href="mailto:support@shreshta.com">
-                <button className="px-6 py-3 bg-[#D4AF37] text-[#2C1810] rounded-lg hover:bg-[#C5A572] transition-colors">
+                <button className="px-6 py-3 bg-[#D4AF37] text-[#2C1810] rounded-lg hover:bg-[#C5A572] transition-colors" style={{cursor: "pointer"}}>
                   Email Us
                 </button>
               </a>
               <a href="tel:+919876543210">
-                <button className="px-6 py-3 bg-white border-2 border-[#D4AF37] text-[#2C1810] rounded-lg hover:bg-[#D4AF37]/10 transition-colors">
+                <button className="px-6 py-3 bg-white border-2 border-[#D4AF37] text-[#2C1810] rounded-lg hover:bg-[#D4AF37]/10 transition-colors" style={{cursor: "pointer"}}>
                   Call Us
                 </button>
               </a>

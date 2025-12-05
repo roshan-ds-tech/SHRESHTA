@@ -40,13 +40,15 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand Section */}
           <motion.div variants={itemVariants} className="space-y-4">
+            <Link to="/" onClick={scrollToTop}>
               <motion.span 
-                className="flex items-center"
+                className="flex items-center cursor-pointer"
                 whileHover={{ scale: 1.05 }}
                 transition={{ duration: 0.2 }}
               >
-              <img src="/logo_final.png" alt="logo" style={{height: '150px'}} />
-            </motion.span>
+                <img src="/logo_final.png" alt="logo" style={{height: '150px'}} />
+              </motion.span>
+            </Link>
             <motion.p 
               className="text-sm text-[#C5A572]"
               initial={{ opacity: 0 }}
@@ -145,7 +147,7 @@ export function Footer() {
               <p className="text-sm">Email: info@shreshta.com</p>
               <p className="text-sm">Phone: +91 98765 43210</p>
             </div>
-          </div>
+          </motion.div>
         </div>
 
         <motion.div 
