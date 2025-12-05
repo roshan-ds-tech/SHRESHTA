@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
+import toast from 'react-hot-toast';
 
 export interface CartItem {
   id: number;
@@ -31,15 +32,41 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       
       if (existingItem) {
         // If item exists, increase quantity
-        return prevItems.map(item =>
+        const updatedItems = prevItems.map(item =>
           item.id === newItem.id
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
+        // Show notification for quantity increase
+        toast.success(`${newItem.name} added to cart!`, {
+          position: 'top-right',
+          duration: 3000,
+          style: {
+            background: '#D4AF37',
+            color: '#2C1810',
+            borderRadius: '8px',
+            padding: '12px 16px',
+            fontWeight: '500',
+          },
+        });
+        return updatedItems;
       }
       
       // If item doesn't exist, add it with quantity 1
-      return [...prevItems, { ...newItem, quantity: 1 }];
+      const newItems = [...prevItems, { ...newItem, quantity: 1 }];
+      // Show notification for new item
+      toast.success(`${newItem.name} added to cart!`, {
+        position: 'top-right',
+        duration: 3000,
+        style: {
+          background: '#D4AF37',
+          color: '#2C1810',
+          borderRadius: '8px',
+          padding: '12px 16px',
+          fontWeight: '500',
+        },
+      });
+      return newItems;
     });
   };
 

@@ -129,7 +129,7 @@ export function AboutPage() {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
             {values.map((value, index) => (
               <motion.div
                 key={index}
@@ -137,13 +137,13 @@ export function AboutPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="text-center p-6 bg-white rounded-lg shadow-lg border-2 border-[#C5A572]/20"
+                className="text-center p-4 md:p-6 bg-white rounded-lg shadow-lg border-2 border-[#C5A572]/20 aspect-square flex flex-col items-center justify-center"
               >
-                <div className="inline-flex items-center justify-center w-16 h-16 mb-4 bg-[#D4AF37]/10 rounded-full border-2 border-[#D4AF37]">
-                  <value.icon className="w-8 h-8 text-[#D4AF37]" />
+                <div className="inline-flex items-center justify-center w-12 h-12 md:w-16 md:h-16 mb-3 md:mb-4 bg-[#D4AF37]/10 rounded-full border-2 border-[#D4AF37]">
+                  <value.icon className="w-6 h-6 md:w-8 md:h-8 text-[#D4AF37]" />
                 </div>
-                <h3 className="text-[#2C1810] mb-2">{value.title}</h3>
-                <p className="text-sm text-[#5C4033]">{value.description}</p>
+                <h3 className="text-[#2C1810] mb-2 text-sm md:text-base font-semibold">{value.title}</h3>
+                <p className="text-xs md:text-sm text-[#5C4033]">{value.description}</p>
               </motion.div>
             ))}
           </div>

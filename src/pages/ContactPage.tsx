@@ -107,10 +107,19 @@ export function ContactPage() {
                 </div>
               </div>
 
-              {/* Map placeholder */}
+              {/* Map */}
               <div className="mt-8">
-                <div className="w-full h-64 bg-[#F5E6D3] rounded-lg border-2 border-[#C5A572]/30 flex items-center justify-center">
-                  <p className="text-[#5C4033]">Map Location</p>
+                <div className="w-full h-64 rounded-lg border-2 border-[#C5A572]/30 overflow-hidden">
+                  <iframe
+                    src="https://www.google.com/maps?q=12.888526041921923,77.57755957712632&hl=en&z=15&output=embed"
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    title="Shreshta Location"
+                  ></iframe>
                 </div>
               </div>
             </motion.div>

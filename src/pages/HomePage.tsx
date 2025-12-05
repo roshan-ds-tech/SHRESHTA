@@ -16,50 +16,50 @@ import {
 
 const products = [
   {
-    id: 1,
-    image: '/jaggery-solid-regular.jpg',
-    name: 'Cube Jaggery',
-    description: 'Perfect cubes of pure jaggery, ideal for daily use and traditional recipes.',
-    price: "299/kg",
-  },
-  {
     id: 2,
-    image: 'https://images.unsplash.com/photo-1671548185843-3f50c6c1060b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxob25leSUyMGxpcXVpZCUyMGdvbGRlbnxlbnwxfHx8fDE3NjEzMTA3NjB8MA&ixlib=rb-4.1.0&q=80&w=1080',
-    name: 'Liquid Jaggery',
-    description: 'Smooth, golden liquid jaggery perfect for drinks, desserts, and marinades.',
-    price: "349/L",
+    image: '/jaggery-cubes.jpg',
+    name: 'Cube Jaggery - Regular',
+    description: 'Traditional cube jaggery perfect for everyday cooking and beverages.',
+    price: "249/kg",
   },
   {
-    id: 3,
+    id: 4,
+    image: '/natural-liquid-jaggery.jpg',
+    name: 'Liquid Jaggery',
+    description: 'Premium liquid jaggery with rich flavor and natural sweetness.',
+    price: "399/kg",
+  },
+  {
+    id: 6,
     image: '/jaggery-powder2.webp',
-    name: 'Powder Jaggery',
-    description: 'Finely powdered jaggery for easy mixing in beverages and baking.',
-    price: "279/kg",
+    name: 'Powder Jaggery - Coarse',
+    description: 'Coarse powder perfect for traditional sweets and cooking.',
+    price: "259/kg",
   },
 ];
 
 const premiumproducts = [
   {
-    id: 4,
+    id: 1,
     url: '/jaggery-cubes1 (online-video-cutter.com).mp4',
     image: '/jaggery-cube1_video.jpeg',
-    name: 'Cube Jaggery',
+    name: 'Powder Sachets',
     description: 'Perfect cubes of pure jaggery, ideal for daily use and traditional recipes.',
     price: '₹299/kg',
   },
   {
-    id: 5,
+    id: 3,
     url: '/hover_video2 (online-video-cutter.com).mp4',
     image: '/hoveer_image2.jpeg',
-    name: 'Liquid Jaggery',
+    name: 'Jaggery cubes ( small)',
     description: 'Smooth, golden liquid jaggery perfect for drinks, desserts, and marinades.',
     price: '₹349/kg',
   },
   {
-    id: 6,
+    id: 5,
     url: '/hover_video3 (online-video-cutter.com).mp4',
     image: '/hover_video3.jpeg',
-    name: 'Powder Jaggery',
+    name: 'Jaggery cubes',
     description: 'Finely powdered jaggery for easy mixing in beverages and baking.',
     price: '₹279/kg',
   },
@@ -108,6 +108,7 @@ const testimonials = [
 
 export function HomePage() {
   const { addToCart } = useCart();
+  const [carouselApi, setCarouselApi] = React.useState<any>(null);
 
   const handleAddToCart = (premiumproduct: typeof premiumproducts[0]) => {
     // Parse price string (e.g., '₹299/kg' -> 299)
@@ -125,6 +126,25 @@ export function HomePage() {
       console.error("Could not parse price for item:", premiumproduct.name, "Input price:", premiumproduct.price);
     }
   };
+
+  // Auto-scroll for mobile view
+  React.useEffect(() => {
+    if (!carouselApi) return;
+
+    const isMobile = window.innerWidth < 768; // md breakpoint
+    if (!isMobile) return;
+
+    const interval = setInterval(() => {
+      if (carouselApi.canScrollNext()) {
+        carouselApi.scrollNext();
+      } else {
+        // Reset to start if at the end
+        carouselApi.scrollTo(0);
+      }
+    }, 3000); // Auto-scroll every 3 seconds
+
+    return () => clearInterval(interval);
+  }, [carouselApi]);
 
   return (
     <div className="min-h-screen">
@@ -232,64 +252,67 @@ export function HomePage() {
             </p>
           </motion.div>
 
-          <Carousel
-            opts={{
-              align: 'start',
-              loop: true,
-            }}
-            className="w-full"
-          >
-            <CarouselContent className="-ml-2 md:-ml-4">
-            {premiumproducts.map((premiumproduct, index) => (
-            <CarouselItem key={premiumproduct.id} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-[#FFF8E7] rounded-lg overflow-hidden shadow-lg border-2 border-[#C5A572]/20 hover:border-[#D4AF37]/50 flex flex-col h-full"
-              >
-                <Link to={`/product/${premiumproduct.id}`} className="block">
-                  <div className="cursor-pointer w-full">
-                    <HoverVideoPlayer
-                      videoSrc={premiumproduct.url}
-                      posterSrc={premiumproduct.image}
-                      className="h-52 md:h-64 w-full"
-                      videoClassName="w-full h-full"
-                    />
-                  </div>
-                </Link>
-                {/* Product details */}
-                <div className="p-6 flex flex-col flex-grow">
-                  <Link to={`/product/${premiumproduct.id}`}>
-                    <h3 className="text-xl font-semibold text-[#2C1810] mb-2 hover:text-[#D4AF37] transition-colors cursor-pointer">{premiumproduct.name}</h3>
-                  </Link>
-                  <p className="text-sm text-[#5C4033] mb-4 line-clamp-2 flex-grow">{premiumproduct.description}</p>
-                  {premiumproduct.price && (
-                    <div className="flex items-center justify-between mt-auto gap-4">
-                      <span className="text-lg text-[#D4AF37] font-semibold">{premiumproduct.price}</span>
-                      <Button
-                        size="sm"
-                        className="bg-[#D4AF37] text-[#2C1810] hover:bg-[#C5A572] whitespace-nowrap"
-                        style={{cursor: "pointer"}}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleAddToCart(premiumproduct);
-                        }}
-                      >
-                        <ShoppingCart className="w-4 h-4 mr-2" />
-                        Add to Cart
-                      </Button>
+          <div className="relative">
+            <Carousel
+              opts={{
+                align: 'start',
+                loop: true,
+              }}
+              setApi={setCarouselApi}
+              className="w-full"
+            >
+              <CarouselContent className="-ml-2 md:-ml-4">
+              {premiumproducts.map((premiumproduct, index) => (
+              <CarouselItem key={premiumproduct.id} className="pl-2 md:pl-4 basis-1/2 md:basis-1/2 lg:basis-1/3">
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className="bg-[#FFF8E7] rounded-lg overflow-hidden shadow-lg border-2 border-[#C5A572]/20 hover:border-[#D4AF37]/50 flex flex-col h-full"
+                >
+                  <Link to={`/product/${premiumproduct.id}`} className="block">
+                    <div className="cursor-pointer w-full">
+                      <HoverVideoPlayer
+                        videoSrc={premiumproduct.url}
+                        posterSrc={premiumproduct.image}
+                        className="h-52 md:h-64 w-full"
+                        videoClassName="w-full h-full"
+                      />
                     </div>
-                  )}
-                </div>
-              </motion.div>
-            </CarouselItem>
-          ))}
-          </CarouselContent>
-            <CarouselPrevious className="border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-[#2C1810]" />
-            <CarouselNext className="border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-[#2C1810]" />
-          </Carousel>
+                  </Link>
+                  {/* Product details */}
+                  <div className="p-6 flex flex-col flex-grow">
+                    <Link to={`/product/${premiumproduct.id}`}>
+                      <h3 className="text-xl font-semibold text-[#2C1810] mb-2 hover:text-[#D4AF37] transition-colors cursor-pointer">{premiumproduct.name}</h3>
+                    </Link>
+                    <p className="text-sm text-[#5C4033] mb-4 line-clamp-2 flex-grow">{premiumproduct.description}</p>
+                    {premiumproduct.price && (
+                      <div className="flex items-center justify-between mt-auto gap-4">
+                        <span className="text-lg text-[#D4AF37] font-semibold">{premiumproduct.price}</span>
+                        <Button
+                          size="sm"
+                          className="bg-[#D4AF37] text-[#2C1810] hover:bg-[#C5A572] whitespace-nowrap"
+                          style={{cursor: "pointer"}}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleAddToCart(premiumproduct);
+                          }}
+                        >
+                          <ShoppingCart className="w-4 h-4 mr-2" />
+                          Add to Cart
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              </CarouselItem>
+            ))}
+            </CarouselContent>
+              <CarouselPrevious className="hidden md:flex border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-[#2C1810]" />
+              <CarouselNext className="hidden md:flex border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-[#2C1810]" />
+            </Carousel>
+          </div>
 
           <div className="text-center mt-12">
             <Link to="/products">
@@ -323,7 +346,7 @@ export function HomePage() {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
             {features.map((feature, index) => (
               <motion.div
                 key={index}
@@ -331,13 +354,13 @@ export function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="text-center p-6 bg-[#3E2723] rounded-lg border-2 border-[#C5A572]/20 hover:border-[#D4AF37]/50 transition-all"
+                className="text-center p-4 md:p-6 bg-[#3E2723] rounded-lg border-2 border-[#C5A572]/20 hover:border-[#D4AF37]/50 transition-all aspect-square flex flex-col items-center justify-center"
               >
-                <div className="inline-flex items-center justify-center w-16 h-16 mb-4 bg-[#D4AF37]/10 rounded-full border-2 border-[#D4AF37]">
-                  <feature.icon className="w-8 h-8 text-[#D4AF37]" />
+                <div className="inline-flex items-center justify-center w-12 h-12 md:w-16 md:h-16 mb-3 md:mb-4 bg-[#D4AF37]/10 rounded-full border-2 border-[#D4AF37]">
+                  <feature.icon className="w-6 h-6 md:w-8 md:h-8 text-[#D4AF37]" />
                 </div>
-                <h3 className="text-[#FFF8E7] mb-2">{feature.title}</h3>
-                <p className="text-sm text-[#C5A572]">{feature.description}</p>
+                <h3 className="text-[#FFF8E7] mb-2 text-sm md:text-base font-semibold">{feature.title}</h3>
+                <p className="text-xs md:text-sm text-[#C5A572]">{feature.description}</p>
               </motion.div>
             ))}
           </div>
@@ -361,7 +384,7 @@ export function HomePage() {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8">
             {testimonials.map((testimonial, index) => (
               <motion.div
                 key={index}
@@ -369,15 +392,17 @@ export function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-white p-8 rounded-lg shadow-lg border-2 border-[#C5A572]/20"
+                className="bg-white p-4 md:p-8 rounded-lg shadow-lg border-2 border-[#C5A572]/20 aspect-square flex flex-col justify-between"
               >
-                <div className="flex mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 fill-[#D4AF37] text-[#D4AF37]" />
-                  ))}
+                <div>
+                  <div className="flex mb-3 md:mb-4">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star key={i} className="w-3 h-3 md:w-5 md:h-5 fill-[#D4AF37] text-[#D4AF37]" />
+                    ))}
+                  </div>
+                  <p className="text-xs md:text-sm text-[#5C4033] mb-3 md:mb-4 italic line-clamp-4">"{testimonial.text}"</p>
                 </div>
-                <p className="text-[#5C4033] mb-4 italic">"{testimonial.text}"</p>
-                <p className="text-[#2C1810]">- {testimonial.name}</p>
+                <p className="text-xs md:text-sm text-[#2C1810] font-medium">- {testimonial.name}</p>
               </motion.div>
             ))}
           </div>
@@ -401,7 +426,7 @@ export function HomePage() {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8">
             {products.map((product, index) => (
               <motion.div
                 key={index}

@@ -111,35 +111,59 @@ export function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-[#2C1810]/95 backdrop-blur-md border-b border-[#C5A572]/20">
+    <motion.nav 
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className="sticky top-0 z-50 bg-[#2C1810]/95 backdrop-blur-md border-b border-[#C5A572]/20"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <img src="/logo_final.png" alt="logo" className="h-24" style={{ height: "110px" }} />
-          </Link>
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Link to="/" className="flex items-center space-x-2">
+              <img src="/logo_final.png" alt="logo" className="h-24" style={{ height: "110px" }} />
+            </Link>
+          </motion.div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            {navLinks.map((link) => (
-              <Link
+            {navLinks.map((link, index) => (
+              <motion.div
                 key={link.path}
-                to={link.path}
-                className={`relative transition-colors ${
-                  isActive(link.path)
-                    ? "text-[#D4AF37]"
-                    : "text-[#F5E6D3] hover:text-[#D4AF37]"
-                }`}
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1, duration: 0.3 }}
               >
-                {link.name}
-                {isActive(link.path) && (
-                  <motion.div
-                    layoutId="navbar-indicator"
-                    className="absolute -bottom-[26px] left-0 right-0 h-0.5 bg-[#D4AF37]"
-                  />
-                )}
-              </Link>
+                <Link
+                  to={link.path}
+                  className={`relative transition-colors ${
+                    isActive(link.path)
+                      ? "text-[#D4AF37]"
+                      : "text-[#F5E6D3] hover:text-[#D4AF37]"
+                  }`}
+                >
+                  <motion.span
+                    whileHover={{ y: -2 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {link.name}
+                  </motion.span>
+                  {isActive(link.path) && (
+                    <motion.div
+                      layoutId="navbar-indicator"
+                      initial={false}
+                      className="absolute -bottom-[26px] left-0 right-0 h-0.5 bg-[#D4AF37]"
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                </Link>
+              </motion.div>
             ))}
           </div>
 
@@ -225,10 +249,15 @@ export function Navbar() {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden text-[#F5E6D3]"
+            className="md:hidden hover:opacity-80 transition-opacity"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label="Toggle menu"
           >
-            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {isMenuOpen ? (
+              <X className="w-6 h-6" style={{ color: '#D4AF37', stroke: '#D4AF37' }} />
+            ) : (
+              <Menu className="w-6 h-6" style={{ color: '#D4AF37', stroke: '#D4AF37' }} />
+            )}
           </button>
         </div>
       </div>
@@ -316,6 +345,6 @@ export function Navbar() {
           </motion.div>
         )}
       </AnimatePresence>
-    </nav>
+    </motion.nav>
   );
 }

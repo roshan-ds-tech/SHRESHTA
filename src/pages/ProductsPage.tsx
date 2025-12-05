@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, styleEffect } from 'motion/react';
 import { ProductCard } from '../components/ProductCard';
 import { Filter } from 'lucide-react';
@@ -135,8 +135,8 @@ const allProducts = [
           {
     id: 16,
     image: '/FinerMillet.webp',
-    name: 'Finer Millet',
-    description: 'Nutritious Finer Millet for wholesome diets.',
+    name: 'Finger Millet',
+    description: 'Nutritious Finger Millet for wholesome diets.',
     price: '₹450/kg',
     category: 'millets',
   },
@@ -313,11 +313,41 @@ export function ProductsPage() {
       </section>
 
       {/* Filter & Sort Section */}
-      <section className="py-8 border-b border-[#C5A572]/20">
+      <motion.section 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="py-8 border-b border-[#C5A572]/20"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="flex flex-col md:flex-row items-center gap-4">
+            {/* Sort Dropdown - Moved to left */}
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1, duration: 0.4 }}
+              className="flex items-center gap-2 w-full md:w-auto"
+            >
+              <span className="text-[#2C1810]">Sort by:</span>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-[180px] border-[#C5A572] "style={{cursor: "pointer"}}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="featured" style={{cursor: "pointer"}}>Featured</SelectItem>
+                  <SelectItem value="price-low" style={{cursor: "pointer"}}>Price: Low to High</SelectItem>
+                  <SelectItem value="price-high" style={{cursor: "pointer"}}>Price: High to Low</SelectItem>
+                </SelectContent>
+              </Select>
+            </motion.div>
+
             {/* Category Filter */}
-            <div className="flex items-center gap-2 flex-wrap">
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2, duration: 0.4 }}
+              className="flex items-center gap-2 flex-wrap flex-1 justify-center md:justify-end"
+            >
               <Filter className="w-5 h-5 text-[#5C4033]" />
               <span className="text-[#2C1810]">Filter:</span>
               <div className="flex gap-2 flex-wrap">
@@ -410,38 +440,26 @@ export function ProductsPage() {
                   Millets
                 </Button>
               </div>
-            </div>
-
-            
-
-            {/* Sort Dropdown */}
-            <div className="flex items-center gap-2">
-              <span className="text-[#2C1810]">Sort by:</span>
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-[180px] border-[#C5A572] "style={{cursor: "pointer"}}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="featured" style={{cursor: "pointer"}}>Featured</SelectItem>
-                  <SelectItem value="price-low" style={{cursor: "pointer"}}>Price: Low to High</SelectItem>
-                  <SelectItem value="price-high" style={{cursor: "pointer"}}>Price: High to Low</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            </motion.div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Products Grid */}
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
             {sortedProducts.map((product, index) => (
               <motion.div
                 key={product.id}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
+                initial={{ opacity: 0, y: 30, scale: 0.9 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ 
+                  delay: index * 0.05,
+                  duration: 0.5,
+                  ease: "easeOut"
+                }}
               >
                 <ProductCard
                   id={product.id}
