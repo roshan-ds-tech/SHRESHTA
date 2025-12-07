@@ -10,145 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-
-const allProducts = [
-  {
-    id: 1,
-    image: '/jaggery-solid-regular.jpg',
-    name: 'Cube Jaggery - Premium',
-    description: 'Perfect cubes of pure jaggery, ideal for daily use and traditional recipes.',
-    price: '₹299/kg',
-    category: 'cube',
-  },
-  {
-    id: 2,
-    image: '/jaggery-cubes.jpg',
-    name: 'Cube Jaggery - Regular',
-    description: 'Traditional cube jaggery perfect for everyday cooking and beverages.',
-    price: '₹249/kg',
-    category: 'cube',
-  },
-  {
-    id: 3,
-    image: 'https://images.unsplash.com/photo-1671548185843-3f50c6c1060b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxob25leSUyMGxpcXVpZCUyMGdvbGRlbnxlbnwxfHx8fDE3NjEzMTA3NjB8MA&ixlib=rb-4.1.0&q=80&w=1080',
-    name: 'Liquid Jaggery - Pure',
-    description: 'Smooth, golden liquid jaggery perfect for drinks, desserts, and marinades.',
-    price: '₹349/kg',
-    category: 'liquid',
-  },
-  {
-    id: 4,
-    image: '/natural-liquid-jaggery.jpg',
-    name: 'Liquid Jaggery',
-    description: 'Premium liquid jaggery with rich flavor and natural sweetness.',
-    price: '₹399/kg',
-    category: 'liquid',
-  },
-  {
-    id: 5,
-    image: '/jaggery-powder.jpg',
-    name: 'Powder Jaggery - Fine',
-    description: 'Finely powdered jaggery for easy mixing in beverages and baking.',
-    price: '₹279/kg',
-    category: 'powder',
-  },
-  {
-    id: 6,
-    image: '/jaggery-powder2.webp',
-    name: 'Powder Jaggery - Coarse',
-    description: 'Coarse powder perfect for traditional sweets and cooking.',
-    price: '₹259/kg',
-    category: 'powder',
-  },
-  {
-    id: 7,
-    image: '/jaggery-block.jpg',
-    name: 'Block Jaggery - Large',
-    description: 'Traditional large blocks ideal for festivals and special occasions.',
-    price: '₹329/kg',
-    category: 'cube',
-  },
-  {
-    id: 8,
-    image: '/jaggery-block1.jpg',
-    name: 'Block Jaggery - Mini',
-    description: 'Convenient mini blocks perfect for portion control and gifting.',
-    price: '₹289/kg',
-    category: 'cube',
-  },
-  {
-    id: 9,
-    image: '/jaggery-powder2.jpg',
-    name: 'Powder Jaggery',
-    description: 'Premium powder jaggery with certified purity.',
-    price: '₹319/kg',
-    category: 'powder',
-  },
-  {
-    id: 10,
-    image: '/ghee.avif',
-    name: 'Cow Ghee',
-    description: 'Premium Cow Ghee with certified purity.',
-    price: '₹5099/L',
-    category: 'dairy',
-  },
-  {
-    id: 11,
-    image: '/butter.webp',
-    name: 'Pure Butter',
-    description: 'Premium Pure Butter with certified purity.',
-    price: '₹669/Kg',
-    category: 'dairy',
-  },
-   {
-    id: 12,
-    image: '/coffee.jpg',
-    name: 'Single Origin Coffee',
-    description: 'Pure Single origin Coffee with rich aroma and flavor.',
-    price: '₹7000/Kg',
-    category: 'beverages',
-  },
-    {
-    id: 13,
-    image: '/tea.jpg',
-    name: 'Assam Black Tea',
-    description: 'Pure Assam Black Tea with strong flavor and aroma.',
-    price: '₹3499/Kg',
-    category: 'beverages',
-  },
-      {
-    id: 14,
-    image: '/green_tea.jpg',
-    name: 'Green Tea',
-    description: 'Pure Green Tea with refreshing taste and health benefits.',
-    price: '₹799/180g',
-    category: 'beverages',
-  },
-        {
-    id: 15,
-    image: '/sorghum-millet.jpg',
-    name: 'Sorghum Millet',
-    description: 'Healthy Sorghum Millet for nutritious meals.',
-    price: '₹899/kg',
-    category: 'millets',
-  },
-          {
-    id: 16,
-    image: '/FinerMillet.webp',
-    name: 'Finger Millet',
-    description: 'Nutritious Finger Millet for wholesome diets.',
-    price: '₹450/kg',
-    category: 'millets',
-  },
-            {
-    id: 17,
-    image: '/pearl-millet.jpg',
-    name: 'Pearl Millet',
-    description: 'Wholesome Pearl Millet for healthy living.',
-    price: '₹650/kg',
-    category: 'millets',
-  },
-];
+import { allProductsData } from '../utils/productData';
 
 // Interface for admin products
 interface AdminProduct {
@@ -206,6 +68,18 @@ const getEditedProducts = (): Map<number, any> => {
   return new Map();
 };
 
+// Convert product from productData.ts to ProductCard format
+const convertProductToCardFormat = (product: typeof allProductsData[0]) => {
+  return {
+    id: product.id,
+    image: product.image,
+    name: product.name,
+    description: product.description,
+    price: product.price,
+    category: product.category || 'all',
+  };
+};
+
 // Convert admin product to product format
 const convertAdminProduct = (adminProduct: AdminProduct) => {
   return {
@@ -221,27 +95,32 @@ const convertAdminProduct = (adminProduct: AdminProduct) => {
 export function ProductsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('featured');
-  const [products, setProducts] = useState(allProducts);
+  const [products, setProducts] = useState(() => 
+    allProductsData.map(convertProductToCardFormat)
+  );
 
-  // Load and merge all products (existing + admin, with deletions and edits applied)
+  // Load and merge all products (from productData + admin, with deletions and edits applied)
   const loadAllProducts = () => {
     const deletedIds = getDeletedProductIds();
     const editedProducts = getEditedProducts();
     const adminProducts = getAdminProducts();
     
-    // Start with existing products, apply edits, exclude deleted
-    const processedExisting = allProducts
+    // Start with products from productData.ts, convert to card format, apply edits, exclude deleted
+    const processedExisting = allProductsData
       .filter(p => !deletedIds.has(p.id))
       .map(p => {
         const edited = editedProducts.get(p.id);
-        return edited ? {
-          id: edited.id,
-          image: edited.image,
-          name: edited.name,
-          description: edited.description,
-          price: edited.price,
-          category: edited.category,
-        } : p;
+        if (edited) {
+          return {
+            id: edited.id,
+            image: edited.image,
+            name: edited.name,
+            description: edited.description,
+            price: edited.price,
+            category: edited.category,
+          };
+        }
+        return convertProductToCardFormat(p);
       });
     
     // Add admin products, exclude deleted

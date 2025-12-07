@@ -4,10 +4,29 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
 import { CartContext } from '../contexts/CartContext';
+import { API_BASE_URL } from '../config';
+import axios from 'axios';
+import { 
+  saveOrder, 
+  generateOrderNumber, 
+  generateOrderId, 
+  calculateDeliveryDate,
+  generateTrackingNumber,
+  type Order 
+} from '../utils/orderStorage';
+import toast from 'react-hot-toast';
+
+// Declare Razorpay types
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
 
 export function CartPage() {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // Check if user is logged in
   useEffect(() => {
@@ -26,7 +45,7 @@ export function CartPage() {
     throw new Error('CartPage must be used within a CartProvider');
   }
 
-  const { cartItems, removeFromCart, updateQuantity } = cartContext;
+  const { cartItems, removeFromCart, updateQuantity, clearCart } = cartContext;
 
   // Don't render cart if user is not logged in (will redirect)
   if (!user) {
@@ -34,8 +53,141 @@ export function CartPage() {
   }
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const shipping = subtotal > 500 ? 0 : 50;
+  const shipping = 0; // Free shipping for development
   const total = subtotal + shipping;
+
+  // Razorpay checkout handler
+  const handleCheckout = async () => {
+    if (cartItems.length === 0) {
+      alert('Your cart is empty!');
+      return;
+    }
+
+    setIsProcessing(true);
+
+    try {
+      // Step 1: Create order from backend
+      const orderResponse = await axios.post(
+        `${API_BASE_URL}/accounts/payment/create-order/`,
+        { amount: total },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      const orderData = orderResponse.data;
+
+      // Step 2: Open Razorpay Checkout
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || '', // Only KEY_ID in frontend
+        amount: orderData.amount, // Amount in paise
+        currency: 'INR',
+        name: 'Shreshta Jaggery Store',
+        description: 'Jaggery purchase',
+        order_id: orderData.id,
+        handler: async function (response: any) {
+          // Payment successful
+          try {
+            // Verify payment on backend
+            const verifyResponse = await axios.post(
+              `${API_BASE_URL}/accounts/payment/verify/`,
+              {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              }
+            );
+
+            if (verifyResponse.data.status === 'success') {
+              // Create order object
+              const orderDate = new Date().toISOString().split('T')[0];
+              const newOrder: Order = {
+                id: generateOrderId(),
+                orderNumber: generateOrderNumber(),
+                items: cartItems.map(item => ({
+                  id: item.id,
+                  name: item.name,
+                  image: item.image,
+                  price: item.price,
+                  quantity: item.quantity,
+                })),
+                orderDate: orderDate,
+                deliveryDate: calculateDeliveryDate(orderDate),
+                status: 'Confirmed',
+                total: total,
+                subtotal: subtotal,
+                shipping: shipping,
+                paymentMethod: `Razorpay •••• ${response.razorpay_payment_id.slice(-4)}`,
+                paymentId: response.razorpay_payment_id,
+                razorpayOrderId: response.razorpay_order_id,
+                shippingAddress: {
+                  name: user.username || user.email || 'Customer',
+                  phone: user.phone || '',
+                  address: 'Address will be updated',
+                  city: 'City',
+                  state: 'State',
+                  pincode: '000000',
+                },
+                trackingNumber: generateTrackingNumber(),
+                estimatedDelivery: calculateDeliveryDate(orderDate),
+              };
+
+              // Save order to localStorage
+              saveOrder(newOrder);
+              
+              toast.success('Payment successful! Your order has been placed.', {
+                duration: 4000,
+                style: {
+                  background: '#D4AF37',
+                  color: '#2C1810',
+                },
+              });
+              
+              // Clear cart after successful payment
+              clearCart();
+              
+              // Redirect to orders page
+              navigate('/orders');
+            } else {
+              alert('Payment verification failed. Please contact support.');
+            }
+          } catch (error) {
+            console.error('Payment verification error:', error);
+            alert('Payment verification error. Please contact support with your payment ID: ' + response.razorpay_payment_id);
+          }
+        },
+        prefill: {
+          name: user.username || '',
+          email: user.email || '',
+          contact: user.phone || '',
+        },
+        theme: {
+          color: '#D4AF37',
+        },
+        modal: {
+          ondismiss: function() {
+            setIsProcessing(false);
+          },
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+      
+      rzp.on('payment.failed', function (response: any) {
+        alert('Payment failed. Please try again.');
+        setIsProcessing(false);
+        console.error('Payment failed:', response.error);
+      });
+
+    } catch (error: any) {
+      console.error('Checkout error:', error);
+      alert(error.response?.data?.error || 'Failed to initiate payment. Please try again.');
+      setIsProcessing(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#FFF8E7] to-white py-12">
@@ -165,13 +317,15 @@ export function CartPage() {
                 </div>
                 <br />
                 <Button
-                  className="w-full mt-6 bg-[#D4AF37] text-[#2C1810] hover:bg-[#C5A572]"
-                  style={{ cursor: "pointer"}}
+                  onClick={handleCheckout}
+                  disabled={isProcessing || cartItems.length === 0}
+                  className="w-full mt-6 bg-[#D4AF37] text-[#2C1810] hover:bg-[#C5A572] disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ cursor: isProcessing ? "not-allowed" : "pointer"}}
                 >
-                  Proceed to Checkout
+                  {isProcessing ? 'Processing...' : 'Proceed to Checkout'}
                 </Button>
                 <p className="text-xs text-center mt-4 text-[#5C4033]">
-                  Free shipping on orders above ₹500
+                  Free shipping (Development mode)
                 </p>
               </motion.div>
             </div>

@@ -7,6 +7,10 @@ from rest_framework import status
 from django.contrib.auth import authenticate
 from django.conf import settings
 import os
+import razorpay
+import hmac
+import hashlib
+import secrets
 
 @api_view(['GET', 'POST'])
 def signup_view(request):
@@ -223,3 +227,90 @@ def change_password_view(request):
     return Response({
         'message': 'Password changed successfully. Please login with your new password.'
     }, status=status.HTTP_200_OK)
+
+
+# Initialize Razorpay client
+razorpay_client = razorpay.Client(auth=(
+    getattr(settings, 'RAZORPAY_KEY_ID', ''),
+    getattr(settings, 'RAZORPAY_KEY_SECRET', '')
+))
+
+
+@api_view(['POST'])
+def create_payment_order(request):
+    """Create a Razorpay order for payment"""
+    try:
+        amount = float(request.data.get('amount', 0))
+        
+        if amount <= 0:
+            return Response({
+                'error': 'Invalid amount. Amount must be greater than 0.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Convert amount to paise (Razorpay expects amount in smallest currency unit)
+        amount_in_paise = int(amount * 100)
+        
+        # Create order
+        order_data = {
+            'amount': amount_in_paise,
+            'currency': 'INR',
+            'receipt': secrets.token_hex(10),
+        }
+        
+        order = razorpay_client.order.create(data=order_data)
+        
+        return Response({
+            'id': order['id'],
+            'amount': order['amount'],
+            'currency': order['currency'],
+            'receipt': order['receipt'],
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response({
+            'error': f'Something went wrong: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+def verify_payment(request):
+    """Verify Razorpay payment signature"""
+    try:
+        razorpay_order_id = request.data.get('razorpay_order_id')
+        razorpay_payment_id = request.data.get('razorpay_payment_id')
+        razorpay_signature = request.data.get('razorpay_signature')
+        
+        if not all([razorpay_order_id, razorpay_payment_id, razorpay_signature]):
+            return Response({
+                'error': 'Missing payment details'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Create signature string
+        message = f"{razorpay_order_id}|{razorpay_payment_id}"
+        
+        # Generate expected signature
+        key_secret = getattr(settings, 'RAZORPAY_KEY_SECRET', '')
+        generated_signature = hmac.new(
+            key_secret.encode(),
+            message.encode(),
+            hashlib.sha256
+        ).hexdigest()
+        
+        # Verify signature
+        if hmac.compare_digest(generated_signature, razorpay_signature):
+            return Response({
+                'status': 'success',
+                'message': 'Payment verified successfully',
+                'payment_id': razorpay_payment_id,
+                'order_id': razorpay_order_id
+            }, status=status.HTTP_200_OK)
+        else:
+            return Response({
+                'status': 'failed',
+                'error': 'Payment verification failed. Invalid signature.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+    except Exception as e:
+        return Response({
+            'error': f'Payment verification error: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

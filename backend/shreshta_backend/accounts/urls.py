@@ -7,4 +7,6 @@ urlpatterns = [
     path('profile/', views.profile_view, name='profile'),
     path('profile/upload-image/', views.upload_profile_image, name='upload_profile_image'),
     path('change-password/', views.change_password_view, name='change_password'),
+    path('payment/create-order/', views.create_payment_order, name='create_payment_order'),
+    path('payment/verify/', views.verify_payment, name='verify_payment'),
 ]

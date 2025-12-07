@@ -38,52 +38,13 @@ import {
 } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import toast from 'react-hot-toast';
-
-// Order Status Types
-type OrderStatus = 
-  | 'Pending' 
-  | 'Confirmed' 
-  | 'Processing' 
-  | 'Shipped' 
-  | 'Out for Delivery' 
-  | 'Delivered' 
-  | 'Cancelled' 
-  | 'Returned';
-
-// Order Item Interface
-interface OrderItem {
-  id: number;
-  name: string;
-  image: string;
-  price: number;
-  quantity: number;
-  weight?: string;
-}
-
-// Order Interface
-interface Order {
-  id: string;
-  orderNumber: string;
-  items: OrderItem[];
-  orderDate: string;
-  deliveryDate?: string;
-  status: OrderStatus;
-  total: number;
-  subtotal: number;
-  shipping: number;
-  tax?: number;
-  paymentMethod: string;
-  shippingAddress: {
-    name: string;
-    phone: string;
-    address: string;
-    city: string;
-    state: string;
-    pincode: string;
-  };
-  trackingNumber?: string;
-  estimatedDelivery?: string;
-}
+import { 
+  getOrders, 
+  updateOrder, 
+  type Order, 
+  type OrderStatus,
+  type OrderItem
+} from '../utils/orderStorage';
 
 // Mock Orders Data (Replace with API call)
 const mockOrders: Order[] = [
@@ -523,8 +484,8 @@ export function OrdersPage() {
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const [user, setUser] = useState<any>(null);
-  const [orders, setOrders] = useState<Order[]>(mockOrders);
-  const [filteredOrders, setFilteredOrders] = useState<Order[]>(mockOrders);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -534,7 +495,7 @@ export function OrdersPage() {
 
   const itemsPerPage = 5;
 
-  // Check if user is logged in
+  // Check if user is logged in and load orders
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
@@ -543,6 +504,55 @@ export function OrdersPage() {
       navigate('/login');
     }
   }, [navigate]);
+
+  // Load orders from localStorage (real orders from payments) and merge with mock orders
+  useEffect(() => {
+    setIsLoading(true);
+    try {
+      // Get real orders from localStorage
+      const savedOrders = getOrders();
+      
+      // Combine saved orders with mock orders, removing duplicates by orderNumber
+      const orderNumbers = new Set(savedOrders.map(o => o.orderNumber));
+      const uniqueMockOrders = mockOrders.filter(o => !orderNumbers.has(o.orderNumber));
+      
+      // Merge: saved orders first (newest real orders), then mock orders
+      const allOrders = [...savedOrders, ...uniqueMockOrders];
+      
+      // Sort by order date (newest first)
+      allOrders.sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime());
+      
+      setOrders(allOrders);
+      setFilteredOrders(allOrders);
+    } catch (error) {
+      console.error('Error loading orders:', error);
+      // Fallback to mock orders if there's an error
+      setOrders(mockOrders);
+      setFilteredOrders(mockOrders);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Listen for order updates (when new orders are added)
+  useEffect(() => {
+    const handleOrdersUpdate = () => {
+      try {
+        const savedOrders = getOrders();
+        const orderNumbers = new Set(savedOrders.map(o => o.orderNumber));
+        const uniqueMockOrders = mockOrders.filter(o => !orderNumbers.has(o.orderNumber));
+        const allOrders = [...savedOrders, ...uniqueMockOrders];
+        allOrders.sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime());
+        setOrders(allOrders);
+        setFilteredOrders(allOrders);
+      } catch (error) {
+        console.error('Error reloading orders:', error);
+      }
+    };
+
+    window.addEventListener('ordersUpdated', handleOrdersUpdate);
+    return () => window.removeEventListener('ordersUpdated', handleOrdersUpdate);
+  }, []);
 
   // Filter orders based on search and status
   useEffect(() => {
@@ -596,25 +606,43 @@ export function OrdersPage() {
 
   const handleCancel = (orderId: string) => {
     if (window.confirm('Are you sure you want to cancel this order?')) {
-      setOrders((prev) =>
-        prev.map((order) =>
-          order.id === orderId ? { ...order, status: 'Cancelled' as OrderStatus } : order
-        )
-      );
-      toast.success('Order cancelled successfully');
-      setIsModalOpen(false);
+      try {
+        // Update order in localStorage
+        updateOrder(orderId, { status: 'Cancelled' as OrderStatus });
+        
+        // Update local state
+        setOrders((prev) =>
+          prev.map((order) =>
+            order.id === orderId ? { ...order, status: 'Cancelled' as OrderStatus } : order
+          )
+        );
+        toast.success('Order cancelled successfully');
+        setIsModalOpen(false);
+      } catch (error) {
+        console.error('Error cancelling order:', error);
+        toast.error('Failed to cancel order');
+      }
     }
   };
 
   const handleReturn = (orderId: string) => {
     if (window.confirm('Are you sure you want to return this order?')) {
-      setOrders((prev) =>
-        prev.map((order) =>
-          order.id === orderId ? { ...order, status: 'Returned' as OrderStatus } : order
-        )
-      );
-      toast.success('Return request submitted');
-      setIsModalOpen(false);
+      try {
+        // Update order in localStorage
+        updateOrder(orderId, { status: 'Returned' as OrderStatus });
+        
+        // Update local state
+        setOrders((prev) =>
+          prev.map((order) =>
+            order.id === orderId ? { ...order, status: 'Returned' as OrderStatus } : order
+          )
+        );
+        toast.success('Return request submitted');
+        setIsModalOpen(false);
+      } catch (error) {
+        console.error('Error returning order:', error);
+        toast.error('Failed to submit return request');
+      }
     }
   };
 
@@ -880,6 +908,11 @@ export function OrdersPage() {
     </div>
   );
 }
+
+
+
+
+
 
 
 

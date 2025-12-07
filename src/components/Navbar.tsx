@@ -148,12 +148,9 @@ export function Navbar() {
                       : "text-[#F5E6D3] hover:text-[#D4AF37]"
                   }`}
                 >
-                  <motion.span
-                    whileHover={{ y: -2 }}
-                    transition={{ duration: 0.2 }}
-                  >
+                  <span>
                     {link.name}
-                  </motion.span>
+                  </span>
                   {isActive(link.path) && (
                     <motion.div
                       layoutId="navbar-indicator"

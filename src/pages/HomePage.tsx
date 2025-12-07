@@ -392,17 +392,15 @@ export function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-white p-4 md:p-8 rounded-lg shadow-lg border-2 border-[#C5A572]/20 aspect-square flex flex-col justify-between"
+                className="bg-white p-4 md:p-8 rounded-lg shadow-lg border-2 border-[#C5A572]/20 flex flex-col"
               >
-                <div>
-                  <div className="flex mb-3 md:mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="w-3 h-3 md:w-5 md:h-5 fill-[#D4AF37] text-[#D4AF37]" />
-                    ))}
-                  </div>
-                  <p className="text-xs md:text-sm text-[#5C4033] mb-3 md:mb-4 italic line-clamp-4">"{testimonial.text}"</p>
+                <div className="flex mb-3 md:mb-4">
+                  {[...Array(testimonial.rating)].map((_, i) => (
+                    <Star key={i} className="w-3 h-3 md:w-5 md:h-5 fill-[#D4AF37] text-[#D4AF37]" />
+                  ))}
                 </div>
-                <p className="text-xs md:text-sm text-[#2C1810] font-medium">- {testimonial.name}</p>
+                <p className="text-xs md:text-sm text-[#5C4033] mb-2 md:mb-3 italic line-clamp-4">"{testimonial.text}"</p>
+                <p className="text-xs md:text-sm text-[#2C1810] font-medium mt-auto">- {testimonial.name}</p>
               </motion.div>
             ))}
           </div>
